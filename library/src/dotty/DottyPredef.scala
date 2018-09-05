@@ -1,6 +1,7 @@
 package dotty
 
 import scala.forceInline
+import scala.annotation.reduce
 
 object DottyPredef {
 
@@ -40,4 +41,9 @@ object DottyPredef {
   @forceInline final def implicitly[T](implicit ev: T): T = ev
 
   @forceInline def locally[T](body: => T): T = body
+
+  @reduce type +[A <: Int, B <: Int] <: Int = A + B
+  // expands to
+  // @reduce(A + B) type +[A <: Int, B <: Int]
+  // def +(A: Int, B: Int): Int = A + B
 }
