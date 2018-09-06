@@ -9,7 +9,7 @@ import SymDenotations._, Symbols._, StdNames._, Annotations._, Trees._
 import Decorators._, transform.SymUtils._
 import NameKinds.{UniqueName, EvidenceParamName, DefaultGetterName}
 
-object Desugar {
+object Check {
   import untpd._
 
   /**     @mirror def +(A: Int, B: Int): Int = A + B
@@ -45,6 +45,29 @@ object Desugar {
     meth.mods.annotations.exists {
       case Apply(Select(New(Ident(name)), nme.CONSTRUCTOR), Nil) => name.toString == "mirror"
       case _ => false
+    }
+  }
+
+  def typeDefDef(sym: Symbol, rhs: tpd.Tree)(implicit ctx: Context) = {
+    sym.unforcedAnnotation(defn.BodyAnnot) match {
+      case Some(ann: ConcreteBodyAnnotation) =>
+      case Some(ann: LazyBodyAnnotation) if ann.isEvaluated =>
+      case _ =>
+        if (!ctx.isAfterTyper) {
+          val TypeApply(Select(expr, _), _) = rhs
+          sym.addAnnotation(ConcreteBodyAnnotation(expr))
+          val t = new tpd.TreeTraverser {
+            def traverse(tree: tpd.Tree)(implicit ctx: Context): Unit = tree match {
+              case ident: tpd.Ident =>
+                if (ident.symbol.owner != sym)
+                  ctx.error(s"Cannot access ${ident.symbol}. Only parameters are accessible in mirror methods.", ident.pos)
+              case tree: tpd.DefTree =>
+                ctx.error(s"Definitions are not allowed in mirror methods.", tree.pos)
+              case _ => traverseChildren(tree)
+            }
+          }
+          t.traverse(expr)
+        }
     }
   }
 }

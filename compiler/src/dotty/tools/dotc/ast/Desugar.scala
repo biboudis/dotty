@@ -228,7 +228,7 @@ object desugar {
     }
 
     val defGetters = defaultGetters(vparamss, 0)
-    if (defGetters.isEmpty) mirror.Desugar.defDef(meth1)  // no default for mirror def
+    if (defGetters.isEmpty) mirror.Check.defDef(meth1)  // no default for mirror def
     else {
       val meth2 = cpy.DefDef(meth1)(vparamss = normalizedVparamss)
         .withMods(meth1.mods | DefaultParameterized)
