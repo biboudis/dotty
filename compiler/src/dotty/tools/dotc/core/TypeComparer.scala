@@ -846,7 +846,8 @@ class TypeComparer(initctx: Context) extends ConstraintHandling {
         case tycon1: TypeRef if tycon1.symbol.isClass =>
           false
         case tycon1: TypeRef =>
-          tycon1.symbol.isMirror && mirror.Evaluator.reduce(tp1)(recur(_, tp2))
+          tycon1.symbol.isMirror && mirror.Evaluator.reduce(tp1)(recur(_, tp2)) ||
+          recur(tp1.superType, tp2)
         case tycon1: TypeProxy =>
           recur(tp1.superType, tp2)
         case _ =>

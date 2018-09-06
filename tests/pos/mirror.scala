@@ -10,12 +10,17 @@ object mirrors {
   // @mirror def +(A: Int, B: Int): +[A.type, B.type] = (A + B).asInstanceOf[+[A.type, B.type]]
   @mirror def +(A: Int, B: Int): Int = A + B
   @mirror def *(A: Int, B: Int): Int = A * B
+
+  type Singleton[T] = T
+  def singlify[T](implicit x: T): T = x
 }
 
 import mirrors._
 
 
-class Vector[N <: Int] {
+class Vector[N <: Int : Singleton] {
+  def size: Int = singlify[N]
+
   def padding(x: Int): Vector[N + x.type] = ???
 
   def concat[M <: Int](vec: Vector[M]): Vector[M + N] = ???
