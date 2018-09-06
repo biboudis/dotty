@@ -788,6 +788,10 @@ object SymDenotations {
     def isInlineable(implicit ctx: Context): Boolean =
       is(TransparentMethod) || is(RewriteMethod)
 
+
+    def isMirrorMethod(implicit ctx: Context): Boolean =
+      is(Method) && hasAnnotation(defn.ScalaMirrorAnnot)
+
     /** An erased value or a rewrite method, excluding @forceInline annotated methods.
      *  The latter have to be kept around to get to parity with Scala.
      *  This is necessary at least until we have full bootstrap. Right now
