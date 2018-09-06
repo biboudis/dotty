@@ -1,6 +1,6 @@
 import scala.annotation.mirror
 
-class Test {
+object mirrors {
   // @reduce type +(A: Int, B: Int): Int = A + B
   // expands to
   // @reduce type +[A <: Int, B <: Int]
@@ -10,7 +10,18 @@ class Test {
   // @mirror def +(A: Int, B: Int): +[A.type, B.type] = (A + B).asInstanceOf[+[A.type, B.type]]
   @mirror def +(A: Int, B: Int): Int = A + B
   @mirror def *(A: Int, B: Int): Int = A * B
+}
 
+import mirrors._
+
+
+class Vector[N <: Int] {
+  def padding(x: Int): Vector[N + x.type] = ???
+
+  def concat[M <: Int](vec: Vector[M]): Vector[M + N] = ???
+}
+
+class Test {
   val a: 5 + 4 = 9
   val b: 5 * 4 = 20
 
@@ -18,4 +29,7 @@ class Test {
   def g(x: 20) = x + x
 
   f(a) + g(b)
+
+  val vec: Vector[500] = ???
+  val vec2 : Vector[1000] = vec.padding(500)
 }
