@@ -789,8 +789,8 @@ object SymDenotations {
       is(TransparentMethod) || is(RewriteMethod)
 
 
-    def isMirrorMethod(implicit ctx: Context): Boolean =
-      is(Method) && hasAnnotation(defn.ScalaMirrorAnnot)
+    def isMirror(implicit ctx: Context): Boolean =
+      hasAnnotation(defn.ScalaMirrorAnnot)
 
     /** An erased value or a rewrite method, excluding @forceInline annotated methods.
      *  The latter have to be kept around to get to parity with Scala.

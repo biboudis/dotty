@@ -805,6 +805,8 @@ class TypeComparer(initctx: Context) extends ConstraintHandling {
           compareLower(bounds(param2), tyconIsTypeRef = false)
         case tycon2: TypeRef =>
           isMatchingApply(tp1) || {
+            tycon2.symbol.isMirror && mirror.Evaluator.reduce(tp2)(recur(tp1, _))
+          } || {
             tycon2.info match {
               case info2: TypeBounds =>
                 compareLower(info2, tyconIsTypeRef = true)
@@ -843,6 +845,8 @@ class TypeComparer(initctx: Context) extends ConstraintHandling {
             isSubType(bounds(param1).hi.applyIfParameterized(args1), tp2, approx.addLow)
         case tycon1: TypeRef if tycon1.symbol.isClass =>
           false
+        case tycon1: TypeRef =>
+          tycon1.symbol.isMirror && mirror.Evaluator.reduce(tp1)(recur(_, tp2))
         case tycon1: TypeProxy =>
           recur(tp1.superType, tp2)
         case _ =>
