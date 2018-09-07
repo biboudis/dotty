@@ -26,7 +26,7 @@ object Check {
 
     // @mirror type +[A <: Int, B <: Int] <: Int
     val paramsT = vparamss.head.map { vdef =>
-      TypeDef(vdef.name.toTypeName, TypeBoundsTree(EmptyTree, vdef.tpt))
+      TypeDef(vdef.name.toTypeName, TypeBoundsTree(EmptyTree, vdef.tpt)).withFlags(Covariant)
     }
     val rhsT = LambdaTypeTree(paramsT, TypeBoundsTree(EmptyTree, tpt))
     val tdef = TypeDef(name.toTypeName, rhsT).withMods(Modifiers(annotations = meth.mods.annotations))
@@ -58,7 +58,7 @@ object Check {
           sym.addAnnotation(ConcreteBodyAnnotation(expr))
           val t = new tpd.TreeTraverser {
             def traverse(tree: tpd.Tree)(implicit ctx: Context): Unit = tree match {
-              case ident: tpd.Ident =>
+              case ident: tpd.Ident if !ident.tpe.isError =>
                 if (ident.symbol.owner != sym)
                   ctx.error(s"Cannot access ${ident.symbol}. Only parameters are accessible in mirror methods.", ident.pos)
               case tree: tpd.DefTree =>

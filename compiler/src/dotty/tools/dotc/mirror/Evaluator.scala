@@ -30,6 +30,8 @@ object Evaluator {
         val expr = getTree(sym)
         val names = getNames(sym)
 
+        if (expr.isEmpty) return tp
+
         val values = args.map { case ConstantType(const) => tpd.Literal(const) }
         val env = names.zip(values).toMap
 
@@ -40,10 +42,18 @@ object Evaluator {
           }
         }
         val exprClosed = treeMap.transform(expr)
-        ConstFold(exprClosed).tpe
+        eval(exprClosed).tpe
       } else AppliedType(typcon, args2)
     case _ =>
       tp
+  }
+
+  def eval(expr: Tree)(implicit ctx: Context): Tree = expr match {
+    case If(cond, thenp, elsep) =>
+      if (eval(cond).tpe =:= ConstantType(Constant(true))) eval(thenp)
+      else eval(elsep)
+    case _ =>
+      ConstFold(expr)
   }
 
   def getNames(sym: Symbol)(implicit ctx: Context): List[TermName] = {
@@ -53,6 +63,9 @@ object Evaluator {
 
   def getTree(sym: Symbol)(implicit ctx: Context): Tree = {
     val methSym = sym.owner.asClass.typeRef.member(sym.name.toTermName).symbol
-    methSym.unforcedAnnotation(defn.BodyAnnot).get.tree
+    methSym.unforcedAnnotation(defn.BodyAnnot) match {
+      case Some(annot) => annot.tree
+      case None => EmptyTree
+    }
   }
 }
