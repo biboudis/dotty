@@ -34,5 +34,47 @@ object Test {
     }
 
 
+    // @finalAlg @autoFunctorK
+    // trait Increment[F[_]] {
+    //   def plusOne(i: Int): F[Int]
+    // }
+
+    // implicit object incTry extends Increment[Try] {
+    //   def plusOne(i: Int) = Try(i + 1)
+    // }
+
+    // def program[F[_]: Monad: Increment](i: Int): F[Int] = for {
+    //   j <- Increment[F].plusOne(i)
+    //   z <- if (j < 10000) program[F](j) else Monad[F].pure(j)
+    // } yield z
+
+    // Macros.asTagless(sym1) { args =>
+
+    def program(i: Int): Symantics[Int] = virt(sym1) {
+      val j = i + 1
+      if (j < 10000)
+        program(j)
+      else
+        j
+    }
+
+    implicit def pure[T](i: Int): Symantics[Int] = ???
+
+    inline def virt[T, F[_] <: Symantics[_]](sym: F[_])(body: F[T]): F[T] = ${ impl('sym, 'body) }
+
+    def impl[T, F[_] <: Symantics[_]](sym: Expr[F[_]], body: Expr[F[T]]): Expr[F[T]] = {
+      ???
+    }
+
+    // def programImpl(sym: Symantics[T])(i: Int) = {
+    //   val j = i + 1
+    //   if (j < 10000)
+    //     programImpl(j)
+    //   else
+    //     j
+    // }
+
+    // program(args.head)
   }
+
 }
